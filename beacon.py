@@ -233,6 +233,16 @@ class BeaconProbe:
 
     def _sample(self, num_samples):
         samples = self._sample_printtime_sync(5, num_samples)
+        # get z compensation from x_twist
+        x_pos = samples[0]['pos'][0]
+        x_twist_compensation = self.printer.lookup_object(
+            'x_twist_comepnsation', None)
+        if x_twist_compensation:
+            # if x_twist_compensation is enabled, add z compensation to samples
+            z_compensation = x_twist_compensation.get_z_compensation_value(x_pos)
+            for s in samples:
+                s['dist'] += z_compensation
+
         return (median([s['dist'] for s in samples]), samples)
 
     def _probe(self, speed, num_samples=10):
